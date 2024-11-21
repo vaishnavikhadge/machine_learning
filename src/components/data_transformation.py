@@ -62,51 +62,48 @@ class DataTransformation:
         Transforms the training and testing datasets using the preprocessing pipeline.
         """
         try:
-            # Load datasets
             train_df = pd.read_csv(train_path)
             test_df = pd.read_csv(test_path)
+            logging.info("read th train and test data")
 
-            # Standardize column names
+            
             train_df.columns = train_df.columns.str.strip().str.lower().str.replace(' ', '_')
             test_df.columns = test_df.columns.str.strip().str.lower().str.replace(' ', '_')
 
-            # Drop unnecessary columns
             train_df.drop(['rownumber', 'customerid', 'surname'], axis=1, inplace=True)
             test_df.drop(['rownumber', 'customerid', 'surname'], axis=1, inplace=True)
-            logging.info("a")
+            logging.info("data cleaning the  done")
 
-            # Define target and input features
-            target_column_name = "tenure"
+            
+            target_column_name = "exited"
             input_feature_train_df = train_df.drop(columns=[target_column_name], axis=1)
             target_feature_train_df = train_df[target_column_name]
 
             input_feature_test_df = test_df.drop(columns=[target_column_name], axis=1)
             target_feature_test_df = test_df[target_column_name]
-            logging.info("b")
 
-            # Define numerical and categorical columns
+            
             numerical_columns = [
                 'creditscore', 'age', 'balance', 'numofproducts', 'hascrcard',
-                'isactivemember', 'estimatedsalary', 'exited', 'complain',
+                'isactivemember', 'estimatedsalary', 'tenure', 'complain',
                 'satisfaction_score', 'point_earned'
             ]
             categorical_columns = ['geography', 'gender', 'card_type']
-            logging.info("C")
+            logging.info("preprocessing obj creating..")
 
-            # Get preprocessing object
+            
             preprocessing_obj = self.get_data_transformer_object(numerical_columns, categorical_columns)
 
-            # Transform features
+           
             input_feature_train_arr = preprocessing_obj.fit_transform(input_feature_train_df)
             input_feature_test_arr = preprocessing_obj.transform(input_feature_test_df)
-            logging.info("d")
+            logging.info("combining features and target...")
 
-            # Combine features and target
+            
             train_arr = np.c_[input_feature_train_arr, np.array(target_feature_train_df)]
             test_arr = np.c_[input_feature_test_arr, np.array(target_feature_test_df)]
-            logging.info("e")
+            logging.info("saving preprocessing object")
 
-            # Save preprocessing object
             save_object(
                 file_path=self.transformation_config.preprocessor_obj_file_path,
                 obj=preprocessing_obj
